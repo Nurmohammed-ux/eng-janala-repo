@@ -1,3 +1,23 @@
+const createElements = (array) => {
+    const htmlElements = array.map((ele) => `<span class="btn bg-[#EDF7FF] text-xl font-normal mr-3 px-5 py-1.5 rounded-lg mb-5">${ele}</span>`);
+    return htmlElements.join(" ");
+}
+
+const manageSpinner = (status) => {
+    if(status === true) {
+        document.getElementById("spinner").classList.remove("hidden");
+        document.getElementById("word-container").classList.add("hidden");
+    } else {
+        document.getElementById("word-container").classList.remove("hidden");
+        document.getElementById("spinner").classList.add("hidden");
+    }
+} 
+
+const removeActive = () => {
+    const lessonButtons = document.querySelectorAll(".lesson-btn");
+    lessonButtons.forEach(btn => btn.classList.remove("active"));
+}
+
 const loadLessons = () => {
     const url = "https://openapi.programming-hero.com/api/levels/all";
     fetch(url)
@@ -8,12 +28,9 @@ const loadLessons = () => {
     })
 }
 
-const removeActive = () => {
-    const lessonButtons = document.querySelectorAll(".lesson-btn");
-    lessonButtons.forEach(btn => btn.classList.remove("active"));
-}
 
 const loadLevelWord = (id) => {
+    manageSpinner(true);
     const url = `https://openapi.programming-hero.com/api/level/${id}`;
     fetch(url)
     .then(response => response.json())
@@ -60,9 +77,7 @@ const displayWordDetails = (word) => {
         <h2 class="text-2xl font-semibold mb-2">Example</h2>
         <p class="text-2xl font-normal text-gray-800 mb-8">${word.sentence}</p>
         <p class="font-bangla text-2xl font-medium mb-2">সমার্থক শব্দ গুলো</p>
-          <span class="btn bg-[#EDF7FF] text-xl font-normal mr-3 px-5 py-1.5 rounded-lg mb-5">${word.synonyms[0] ? word.synonyms[0] : "সমার্থক শব্দ পাওয়া যায়নি"}</span>
-          <span class="btn bg-[#EDF7FF] text-xl font-normal mr-3 px-5 py-1.5 rounded-lg mb-5">${word.synonyms[1] ? word.synonyms[1] : "সমার্থক শব্দ পাওয়া যায়নি"}</span>
-          <span class="btn bg-[#EDF7FF] text-xl font-normal px-5 py-1.5 rounded-lg mb-5">${word.synonyms[2] ? word.synonyms[2] : "সমার্থক শব্দ পাওয়া যায়নি"}</span>
+        <div>${createElements(word.synonyms)}</div>
       </div>
     
     `;
@@ -86,6 +101,7 @@ const displayLevelWord = (words) => {
                         <h4 class="font-bangla text-[34px] text-[#292524] font-semibold">নেক্সট Lesson এ যান</h4>
        </div>
         `;
+        manageSpinner(false);
         return;
     }
 
@@ -106,6 +122,7 @@ const displayLevelWord = (words) => {
         `
         wordContainer.append(card);
     })
+    manageSpinner(false);
 }
 
 const displayLessons = (lessons) => {
@@ -128,3 +145,41 @@ const displayLessons = (lessons) => {
     }
 }
 loadLessons();
+
+
+document.getElementById("btn-search")
+.addEventListener('click', () => {
+    removeActive();
+    const input = document.getElementById("input-search");
+    const searchValue = input.value.trim().toLowerCase();
+    console.log(searchValue);
+
+    fetch("https://openapi.programming-hero.com/api/words/all")
+    .then(response => response.json())
+    .then(data => {
+        
+        const allWords = data.data;
+        const filterWords = allWords.filter((word) => word.word.toLowerCase().includes(searchValue));
+        displayLevelWord(filterWords);
+    })
+})
+
+// FAQ buttons (both mobile & desktop)
+document.querySelectorAll(".btn-faq").forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById("faq-section").scrollIntoView({
+            behavior: "smooth"
+        });
+    });
+});
+
+// Learn buttons (both mobile & desktop)
+document.querySelectorAll(".btn-learn").forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        document.getElementById("learn-section").scrollIntoView({
+            behavior: "smooth"
+        });
+    });
+});
